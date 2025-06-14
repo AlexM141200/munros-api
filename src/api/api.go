@@ -23,6 +23,7 @@ func (s *APIServer) Run() error {
 	//GET Requests
 	router.HandleFunc("/munros/{id}", handleMunroByID)
 	router.HandleFunc("/munros", handleGetMunros)
+	router.HandleFunc("/munrosCSV", )
 
 	//POST Requests
 	router.HandleFunc("POST /munros/{id}", handlePostMunro)
