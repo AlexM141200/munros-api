@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MunroMark – Conquer Every Peak. Track Every Munro.</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-50 via-white to-green-50 text-gray-800">
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8">MunroMark</h1>
+
+        <div id="munros-container" hx-get="/munros" hx-trigger="load" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Munro cards will be loaded here by HTMX -->
+        </div>
+    </div>
+
+    <script>
+        htmx.on('#munros-container', 'htmx:afterSettle', function (evt) {
+            const munros = JSON.parse(evt.detail.xhr.responseText);
+            let html = '';
+            munros.forEach(munro => {
+                html += `
+                <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                    <h2 class="text-2xl font-bold mb-2">${munro.name}</h2>
+                    <p class="text-gray-600">Height: ${munro.height}m</p>
+                    <p class="text-gray-600">Grid Reference: ${munro.location}</p>
+                </div>
+                `;
+            });
+            htmx.find('#munros-container').innerHTML = html;
+        });
+    </script>
+
+    <!-- Hero Section -->
+    <section class="relative flex flex-col items-center justify-center min-h-[80vh] px-4 py-12 text-center">
+        <img src="https://placehold.co/1200x600/6B7280/FFFFFF?text=Stunning+Highlands" alt="Scottish Highlands at sunrise" class="absolute inset-0 w-full h-full object-cover object-center opacity-60 rounded-xl pointer-events-none -z-10">
+        <div class="relative z-10 max-w-2xl mx-auto">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-green-900 drop-shadow-lg mb-4">Conquer Every Peak. Track Every Munro.</h1>
+            <p class="text-lg sm:text-xl md:text-2xl text-green-800 mb-8 font-medium">Your ultimate ad-free companion for Munro bagging, featuring stunning photography, live trail insights, and a passionate community.</p>
+            <button 
+                class="px-8 py-4 bg-green-700 hover:bg-green-800 text-white text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-300"
+                hx-get="#modal-content"
+                hx-trigger="click"
+                hx-target="#modal"
+                hx-swap="innerHTML"
+                aria-label="Start Your Ascent - Download Now!"
+            >
+                Start Your Ascent – Download Now!
+            </button>
+        </div>
+        <!-- Modal (HTMX target) -->
+        <div id="modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden"></div>
+        <!-- Modal Content (hidden, revealed by HTMX) -->
+        <template id="modal-content">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 text-center relative animate-fade-in">
+                <button onclick="document.getElementById('modal').classList.add('hidden')" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold" aria-label="Close">&times;</button>
+                <h2 class="text-2xl font-bold mb-2 text-green-800">Coming Soon!</h2>
+                <p class="mb-4 text-gray-700">MunroMark is launching soon. Sign up for updates and be the first to know when we go live!</p>
+                <form class="flex flex-col gap-3">
+                    <input type="email" placeholder="Your email address" class="rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-green-400" required>
+                    <button type="submit" class="bg-green-700 hover:bg-green-800 text-white rounded-lg px-4 py-2 font-semibold">Notify Me</button>
+                </form>
+            </div>
+            <script>
+                // Show modal when HTMX swaps in content
+                document.getElementById('modal').classList.remove('hidden');
+            </script>
+        </template>
+        <!-- End Modal -->
+    </section>
+
+    <!-- Why MunroMark? (Feature Overview) -->
+    <section class="max-w-6xl mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold text-center text-green-900 mb-10">Why MunroMark?</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
+                <img src="https://placehold.co/100x100/16A34A/FFFFFF?text=✓" alt="Ad-Free Icon" class="mb-4 rounded-full">
+                <h3 class="text-xl font-semibold mb-2 text-green-800">Ad-Free & Focused Tracking</h3>
+                <p class="text-gray-600">Enjoy a clean, uninterrupted experience. MunroMark is 100% ad-free, so you can focus on your adventure.</p>
+            </div>
+            <!-- Feature 2 -->
+            <div class="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
+                <img src="https://placehold.co/100x100/2563EB/FFFFFF?text=📷" alt="Photography Icon" class="mb-4 rounded-full">
+                <h3 class="text-xl font-semibold mb-2 text-blue-800">Stunning Photographic Journeys</h3>
+                <p class="text-gray-600">Immerse yourself in breathtaking Highland photography. Soon, contribute your own photos to inspire others!</p>
+            </div>
+            <!-- Feature 3 (with HTMX accordion/tab) -->
+            <div class="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
+                <img src="https://placehold.co/100x100/059669/FFFFFF?text=🗺️" alt="Map Icon" class="mb-4 rounded-full">
+                <h3 class="text-xl font-semibold mb-2 text-green-700">Maps That Guide & Inspire</h3>
+                <p class="text-gray-600 mb-2">Navigate with confidence using detailed, interactive maps.</p>
+                <button 
+                    class="text-green-700 underline font-medium"
+                    hx-get="#maps-details"
+                    hx-target="#maps-accordion"
+                    hx-swap="innerHTML"
+                    aria-expanded="false"
+                >Learn More</button>
+                <div id="maps-accordion" class="mt-2"></div>
+                <!-- HTMX: Clicking 'Learn More' loads more details here -->
+                <template id="maps-details">
+                    <div class="text-sm text-gray-700 bg-green-50 rounded-lg p-3 mt-2">
+                        <strong>Offline-ready</strong> maps, accurate routes, and summit info. Built on a meticulously compiled database of all 282 Munros.
+                    </div>
+                </template>
+            </div>
+            <!-- Feature 4 -->
+            <div class="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
+                <img src="https://placehold.co/100x100/F59E42/FFFFFF?text=💬" alt="Trail Insights Icon" class="mb-4 rounded-full">
+                <h3 class="text-xl font-semibold mb-2 text-orange-700">Real-Time Trail Insights</h3>
+                <p class="text-gray-600">Get live updates on trail conditions from fellow hikers—know before you go, and share your own tips!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works (Simple Steps) -->
+    <section class="bg-green-50 py-12 px-4">
+        <h2 class="text-3xl font-bold text-center text-green-900 mb-10">How It Works</h2>
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center text-center">
+                <div class="bg-green-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-4">1</div>
+                <h4 class="text-lg font-semibold mb-2">Discover Munros</h4>
+                <p class="text-gray-600">Browse all 282 Munros, complete with photos, maps, and essential info.</p>
+            </div>
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center text-center">
+                <div class="bg-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-4">2</div>
+                <h4 class="text-lg font-semibold mb-2">Track Your Progress</h4>
+                <p class="text-gray-600">Log your ascents, sync with your smartwatch, and see your Munro-bagging journey unfold.</p>
+            </div>
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center text-center">
+                <div class="bg-orange-500 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mb-4">3</div>
+                <h4 class="text-lg font-semibold mb-2">Share Your Journey</h4>
+                <p class="text-gray-600">Upload photos, share trail conditions, and connect with a vibrant community of fellow hikers.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community & Connection -->
+    <section class="max-w-5xl mx-auto px-4 py-12">
+        <h2 class="text-3xl font-bold text-center text-green-900 mb-8">A Community of Munro Baggers</h2>
+        <div class="flex flex-col md:flex-row items-center gap-8">
+            <img src="https://placehold.co/400x250/374151/FFFFFF?text=Community+Photos" alt="MunroMark Community" class="rounded-xl shadow-lg w-full md:w-1/2 object-cover">
+            <div class="flex-1">
+                <p class="text-lg text-gray-700 mb-4">Join a passionate community of Scottish mountain lovers. Share your experiences, upload your best photos, and help others with real-time trail updates.</p>
+                <p class="text-gray-600 mb-4">Our photo voting system lets you showcase the beauty of the Highlands—it's about inspiration, not competition. Every hiker's story adds to the adventure!</p>
+                <ul class="list-disc list-inside text-gray-700">
+                    <li>Connect with fellow Munro baggers</li>
+                    <li>Vote for your favorite summit photos</li>
+                    <li>Share tips, routes, and trail conditions</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final Call to Action -->
+    <section class="bg-gradient-to-r from-green-700 to-blue-700 py-12 px-4 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">Ready to Begin Your Munro Adventure?</h2>
+        <p class="text-lg text-blue-100 mb-8">Download MunroMark and start tracking your ascents today. The Highlands await!</p>
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-4">
+            <a href="#" class="flex items-center bg-white text-green-800 font-semibold px-6 py-3 rounded-xl shadow-lg hover:bg-green-100 transition">
+                <img src="https://placehold.co/32x32?text=" alt="App Store Icon" class="w-8 h-8 mr-2"> App Store
+            </a>
+            <a href="#" class="flex items-center bg-white text-green-800 font-semibold px-6 py-3 rounded-xl shadow-lg hover:bg-green-100 transition">
+                <img src="https://placehold.co/32x32?text=▶" alt="Google Play Icon" class="w-8 h-8 mr-2"> Google Play
+            </a>
+        </div>
+        <p class="text-blue-100 text-sm">Built on a meticulously compiled database of all 282 Munros.</p>
+    </section>
+
+    <!-- Accessibility: Modal close on Escape -->
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('modal').classList.add('hidden');
+            }
+        });
+    </script>
+    <!-- HTMX: Modal and Accordion logic -->
+    <script>
+        // HTMX: Modal content swap
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === 'modal') {
+                document.getElementById('modal').classList.remove('hidden');
+            }
+        });
+        // HTMX: Accordion/tab for maps feature
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === 'maps-accordion') {
+                evt.detail.target.previousElementSibling.setAttribute('aria-expanded', 'true');
+            }
+        });
+    </script>
+
+</body>
+</html> 

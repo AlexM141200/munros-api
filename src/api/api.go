@@ -21,12 +21,10 @@ func (s *APIServer) Run() error {
 	router := http.NewServeMux()
 
 	//GET Requests
+	router.HandleFunc("/", handleIndex)
 	router.HandleFunc("/munros/{id}", handleMunroByID)
-	router.HandleFunc("/munros", handleGetMunros)
-	router.HandleFunc("/munrosCSV", )
-
-	//POST Requests
-	router.HandleFunc("POST /munros/{id}", handlePostMunro)
+	router.HandleFunc("/munros/", handleGetMunros)
+	router.HandleFunc("/munrosCSV/", handleMunrosCSV)
 
 	server := http.Server{
 		Addr:    s.addr,

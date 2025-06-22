@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/AlexM141200/munros-api/src/model"
-	"github.com/Alexm141200/munros-api/src/csv"
 )
 
 func handleGetMunros(w http.ResponseWriter, r *http.Request) {
@@ -20,11 +19,14 @@ func handleMunroByID(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func handlePostMunro(w http.ResponseWriter, r *http.Request) {
+func handleMunrosCSV(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleMunrosCSV(w http.ResponseWriter, r *http.Request) {
-	munroData :=
-	res := 
+// ###########################################
+// Handling Pages
+// ###########################################
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	//Server the index.html file
+	http.ServeFile(w, r, "./frontend/index.html")
 }
