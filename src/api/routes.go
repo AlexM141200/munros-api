@@ -16,7 +16,11 @@ func handleMunroByID(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func handleMunrosCSV(w http.ResponseWriter, r *http.Request) {
+func () handleMunrosCSV(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func handleGetAllMunros( ) {
 
 }
 
