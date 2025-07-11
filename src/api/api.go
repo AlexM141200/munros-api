@@ -1,21 +1,19 @@
 package api
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
-  "path/filePath"
-  "os"
-  "database/sql"
 
-  _ "github.com/mattn/go-sqlite3" 
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type APIServer struct {
 	addr string
 }
 
-type Application struct{
-  DB *sql.DB
+type Application struct {
+	DB *sql.DB
 }
 
 func NewAPIServer(addr string) *APIServer {
@@ -26,38 +24,42 @@ func NewAPIServer(addr string) *APIServer {
 
 // Run Function of API Server
 func (s *APIServer) Run() error {
-  
-  //Data directory
-  dataDir := "./data"
-  dbFilename := "munro.db"
-  dbPath := filePath.Join(datadir, dbFilename)
 
+	//Data directory
+	/*
+	  dataDir := "./data"
+	  dbFilename := "munro.db"
+	*/
 
-  //Create data directory if not exists
-  if _, err := os.Stat(dataDir); os.IsNotExists(err) {
-          fmt.Printf("Creating Data Directory. %s\n", dataDir)
-            if err := os.MkDir(dataDir, 0755); err != nil {
-              return fmt.Errorf("Failed to create directory.")
-    }
-  }
+	//Open sqlite database.
+	/*
+	  db, err := sql.Open()
+	  if err != nil {
+	  panic(err)
+	  }
 
-  //Open sqlite database.
-  db, err := sql.Open()
+	*/
 
-
-  app := &Application{
-    DB: db,
-  }
-
+	app := &Application{
+		DB: nil, // Will be initialized when we switch to database
+	}
 
 	router := http.NewServeMux()
 
-	//GET Requests
+	// API Routes
+	router.HandleFunc("/api/munros", handleGetMunros)
+	router.HandleFunc("/api/munros/{id}", handleMunroByID)
+	router.HandleFunc("/api/munros/csv", handleMunrosCSV)
+	router.HandleFunc("/api/munros/all", handleGetAllMunros)
+
+	// Frontend Routes
 	router.HandleFunc("/", handleIndex)
-	router.HandleFunc("/munros/{id}", handleMunroByID)
-	router.HandleFunc("/munros/", handleGetMunros)
-	router.HandleFunc("/munrosCSV/", handleMunrosCSV)
-  router.HandleFunc("/getAllMunros/", handleGetAllMunros)
+
+	// Static file server for frontend assets
+	fs := http.FileServer(http.Dir("./munromark/build/client/"))
+	router.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	_ = app // Suppress unused variable warning
 
 	server := http.Server{
 		Addr:    s.addr,
