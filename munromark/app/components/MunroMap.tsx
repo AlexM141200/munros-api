@@ -5,9 +5,12 @@ import "leaflet/dist/leaflet.css";
 
 // Fix for default markers in React-Leaflet
 const DefaultIcon = L.icon({
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -16,7 +19,9 @@ const DefaultIcon = L.icon({
 
 // Custom Munro icon - mountain peak
 const MunroIcon = L.icon({
-  iconUrl: "data:image/svg+xml;base64," + btoa(`
+  iconUrl:
+    "data:image/svg+xml;base64," +
+    btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
       <path fill="#2563eb" d="M12 2L3 22h18L12 2zm0 4.5L18.5 20h-13L12 6.5z"/>
       <circle cx="12" cy="8" r="1.5" fill="#ffffff"/>
@@ -59,14 +64,14 @@ interface MunroMapProps {
 
 function MapUpdater({ munros }: { munros: Munro[] }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (munros.length > 0) {
       // Create bounds from munro coordinates
       const bounds = L.latLngBounds(
-        munros.map(munro => [munro.latitude, munro.longitude])
+        munros.map((munro) => [munro.latitude, munro.longitude])
       );
-      
+
       // Fit map to show all munros
       map.fitBounds(bounds, { padding: [20, 20] });
     }
@@ -83,16 +88,17 @@ export default function MunroMap({ munros, onMunroClick }: MunroMapProps) {
   // Scotland bounds to restrict map view
   const scotlandBounds = L.latLngBounds(
     [54.6, -7.5], // Southwest corner (bottom-left)
-    [60.9, -0.5]  // Northeast corner (top-right)
+    [60.9, -0.5] // Northeast corner (top-right)
   );
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredMunros(munros);
     } else {
-      const filtered = munros.filter(munro =>
-        munro.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        munro.smc_section.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = munros.filter(
+        (munro) =>
+          munro.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          munro.smc_section.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredMunros(filtered);
     }
@@ -134,7 +140,7 @@ export default function MunroMap({ munros, onMunroClick }: MunroMapProps) {
         maxBounds={scotlandBounds}
         maxBoundsViscosity={1.0}
         className="w-full h-full"
-        style={{ height: "100vh" }}
+        style={{ height: "100%" }}
         worldCopyJump={false}
         zoomSnap={0.25}
       >
@@ -142,16 +148,16 @@ export default function MunroMap({ munros, onMunroClick }: MunroMapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        
+
         <MapUpdater munros={filteredMunros} />
-        
+
         {filteredMunros.map((munro) => (
           <Marker
             key={munro.running_no}
             position={[munro.latitude, munro.longitude]}
             icon={MunroIcon}
             eventHandlers={{
-              click: () => handleMunroClick(munro)
+              click: () => handleMunroClick(munro),
             }}
           >
             <Popup>
@@ -159,7 +165,7 @@ export default function MunroMap({ munros, onMunroClick }: MunroMapProps) {
                 <h3 className="text-lg font-bold text-gray-800 mb-2">
                   {munro.name}
                 </h3>
-                
+
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="font-semibold text-gray-600">Height:</span>
@@ -167,36 +173,50 @@ export default function MunroMap({ munros, onMunroClick }: MunroMapProps) {
                       {formatHeight(munro.height_m, munro.height_ft)}
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="font-semibold text-gray-600">Classification:</span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      munro.classification === 'Munro' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className="font-semibold text-gray-600">
+                      Classification:
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        munro.classification === "Munro"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
                       {munro.classification}
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="font-semibold text-gray-600">SMC Section:</span>
+                    <span className="font-semibold text-gray-600">
+                      SMC Section:
+                    </span>
                     <span className="text-gray-800">{munro.smc_section}</span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="font-semibold text-gray-600">Grid Reference:</span>
-                    <span className="text-gray-800 font-mono">{munro.grid_ref}</span>
+                    <span className="font-semibold text-gray-600">
+                      Grid Reference:
+                    </span>
+                    <span className="text-gray-800 font-mono">
+                      {munro.grid_ref}
+                    </span>
                   </div>
-                  
+
                   {munro.comments && (
                     <div className="border-t pt-2">
-                      <span className="font-semibold text-gray-600">Comments:</span>
-                      <p className="text-gray-700 text-xs mt-1">{munro.comments}</p>
+                      <span className="font-semibold text-gray-600">
+                        Comments:
+                      </span>
+                      <p className="text-gray-700 text-xs mt-1">
+                        {munro.comments}
+                      </p>
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex gap-2 mt-3 pt-3 border-t">
                   {munro.streetmap_url && (
                     <a

@@ -5,7 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"context"
+
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/AlexM141200/munros-api/src/handlers"
 )
 
 type APIServer struct {
@@ -23,7 +27,7 @@ func NewAPIServer(addr string) *APIServer {
 }
 
 // Run Function of API Server
-func (s *APIServer) Run() error {
+func (s *APIServer) Run(ctx context.Context) error {
 
 	//Data directory
 	/*
@@ -41,25 +45,20 @@ func (s *APIServer) Run() error {
 	*/
 
 	app := &Application{
-		DB: nil, // Will be initialized when we switch to database
+		DB: nil,
 	}
 
 	router := http.NewServeMux()
 
 	// API Routes
-	router.HandleFunc("/api/munros", handleGetMunros)
-	router.HandleFunc("/api/munros/{id}", handleMunroByID)
-	router.HandleFunc("/api/munros/csv", handleMunrosCSV)
-	router.HandleFunc("/api/munros/all", handleGetAllMunros)
+	handlers.SetupMunroRoutes(router)
 
 	// Frontend Routes
-	router.HandleFunc("/", handleIndex)
 
-	// Static file server for frontend assets
 	fs := http.FileServer(http.Dir("./munromark/build/client/"))
 	router.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
-	_ = app // Suppress unused variable warning
+	_ = app
 
 	server := http.Server{
 		Addr:    s.addr,

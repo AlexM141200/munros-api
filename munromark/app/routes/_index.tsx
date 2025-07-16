@@ -34,23 +34,26 @@ export interface Munro {
 export const meta: MetaFunction = () => {
   return [
     { title: "Munro Mark - Interactive Map of Scottish Munros" },
-    { name: "description", content: "Explore all the Munros in Scotland with our interactive map" },
+    {
+      name: "description",
+      content: "Explore all the Munros in Scotland with our interactive map",
+    },
   ];
 };
 
 export const loader: LoaderFunction = async () => {
   try {
     // Fetch munros from our Go API
-    const response = await fetch('http://localhost:8080/api/munros');
-    
+    const response = await fetch("http://localhost:8080/api/munros");
+
     if (!response.ok) {
-      throw new Error('Failed to fetch munros');
+      throw new Error("Failed to fetch munros");
     }
-    
+
     const munros = await response.json();
     return json({ munros });
   } catch (error) {
-    console.error('Error fetching munros:', error);
+    console.error("Error fetching munros:", error);
     return json({ munros: [] });
   }
 };
@@ -87,25 +90,56 @@ export default function Index() {
 
       <main className="h-[calc(100vh-80px)] relative">
         {isClient ? (
-          <> 
+          <>
             {/* Decorative hero overlay */}
             {showHero && (
               <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1000] w-[90%] sm:w-[600px] bg-white/80 backdrop-blur-md rounded-xl shadow-xl p-6 flex flex-col items-center text-center gap-4">
-                <button onClick={() => setShowHero(false)} aria-label="Close overlay" className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-2xl leading-none">&times;</button>
-                <h2 className="text-3xl font-extrabold text-gray-900 drop-shadow-sm">Discover Scotland
-                  <span className="block text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-teal-500 to-green-500 tracking-tight">Munros Map</span>
+                <button
+                  onClick={() => setShowHero(false)}
+                  aria-label="Close overlay"
+                  className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-2xl leading-none"
+                >
+                  &times;
+                </button>
+                <h2 className="text-3xl font-extrabold text-gray-900 drop-shadow-sm">
+                  Discover Scotland
+                  <span className="block text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-teal-500 to-green-500 tracking-tight">
+                    Munros Map
+                  </span>
                 </h2>
                 <p className="text-gray-700 max-w-prose text-sm sm:text-base">
-                  Explore every Scottish Munro peak on an interactive map. Click a summit to see height, routes, photos and more.
+                  Explore every Scottish Munro peak on an interactive map. Click
+                  a summit to see height, routes, photos and more.
                 </p>
                 <div className="flex gap-3">
-                  <a href="#map" className="px-5 py-2 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 shadow">Start Exploring</a>
-                  <a href="https://en.wikipedia.org/wiki/Munro" target="_blank" rel="noreferrer" className="px-5 py-2 rounded-lg font-semibold bg-white/70 border border-blue-600 text-blue-700 hover:bg-white">What is a Munro?</a>
+                  <a
+                    href="#map"
+                    className="px-5 py-2 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 shadow"
+                  >
+                    Start Exploring
+                  </a>
+                  <a
+                    href="https://en.wikipedia.org/wiki/Munro"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-5 py-2 rounded-lg font-semibold bg-white/70 border border-blue-600 text-blue-700 hover:bg-white"
+                  >
+                    What is a Munro?
+                  </a>
                 </div>
               </div>
             )}
             <div id="map" className="w-full h-full">
-              <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-gray-100"><div className="text-center"><div className="animate-spin rounded-full h-20 w-20 border-b-2 border-blue-500 mx-auto mb-4"></div><p className="text-gray-600">Loading map...</p></div></div>}>
+              <Suspense
+                fallback={
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading map...</p>
+                    </div>
+                  </div>
+                }
+              >
                 <MunroMapLazy
                   munros={munros}
                   onMunroClick={(munro: Munro) => setSelectedMunro(munro)}
