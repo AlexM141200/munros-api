@@ -9,6 +9,7 @@ import (
 
 	"github.com/AlexM141200/munros-api/src/csv"
 	"github.com/AlexM141200/munros-api/src/model"
+	"github.com/AlexM141200/munros-api/src/templates"
 )
 
 // DataService interface for flexible data source (CSV now, database later)
@@ -163,7 +164,23 @@ func filterMunros(munros []model.Munro, query map[string][]string) []model.Munro
 // ###########################################
 // Handling Pages
 // ###########################################
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	//Server the index.html file
-	http.ServeFile(w, r, "./frontend/index.html")
+func HandleIndex(w http.ResponseWriter, r *http.Request) {
+	// Load munros data
+	munros, err := dataService.ReadMunros()
+	if err != nil {
+		log.Printf("Error reading munros: %v", err)
+		http.Error(w, "Failed to load munros data", http.StatusInternalServerError)
+		return
+	}
+
+	// Set content type
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Render the index template
+	err = templates.Index(munros).Render(r.Context(), w)
+	if err != nil {
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		return
+	}
 }

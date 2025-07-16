@@ -54,6 +54,7 @@ func (s *APIServer) Run(ctx context.Context) error {
 	handlers.SetupMunroRoutes(router)
 
 	// Frontend Routes
+	handlers.SetupFrontendRoutes(router)
 
 	fs := http.FileServer(http.Dir("./munromark/build/client/"))
 	router.Handle("/assets/", http.StripPrefix("/assets/", fs))

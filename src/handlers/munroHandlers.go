@@ -13,3 +13,7 @@ func SetupMunroRoutes(router *http.ServeMux) {
 	router.HandleFunc("/api/munros/csv", routes.HandleMunrosCSV)
 	router.HandleFunc("/api/munros/all", routes.HandleGetAllMunros)
 }
+
+func SetupFrontendRoutes(router *http.ServeMux) {
+	router.HandleFunc("/", routes.HandleIndex)
+}
