@@ -1,0 +1,10 @@
+package views
+
+import "github.com/AlexM141200/munros-api/src/model"
+
+templ Index(munros []model.Munro) {
+	@Layout("Munro Mark - Interactive Map of Scottish Munros", "Explore all the Munros in Scotland with our interactive map") {
+		@Header(len(munros))
+		@Map()
+	}
+}

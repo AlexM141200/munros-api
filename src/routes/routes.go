@@ -9,7 +9,7 @@ import (
 
 	"github.com/AlexM141200/munros-api/src/csv"
 	"github.com/AlexM141200/munros-api/src/model"
-	"github.com/AlexM141200/munros-api/src/templates"
+	templates "github.com/AlexM141200/munros-api/src/views"
 )
 
 // DataService interface for flexible data source (CSV now, database later)
