@@ -59,6 +59,10 @@ func (s *APIServer) Run(ctx context.Context) error {
 	fs := http.FileServer(http.Dir("./munromark/build/client/"))
 	router.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
+	// Serve static files from public directory
+	publicFS := http.FileServer(http.Dir("./public/"))
+	router.Handle("/public/", http.StripPrefix("/public/", publicFS))
+
 	_ = app
 
 	server := http.Server{

@@ -164,20 +164,28 @@ func filterMunros(munros []model.Munro, query map[string][]string) []model.Munro
 // ###########################################
 // Handling Pages
 // ###########################################
-func HandleIndex(w http.ResponseWriter, r *http.Request) {
-	// Load munros data
-	munros, err := dataService.ReadMunros()
-	if err != nil {
-		log.Printf("Error reading munros: %v", err)
-		http.Error(w, "Failed to load munros data", http.StatusInternalServerError)
-		return
-	}
+//
+//
 
+func HandleIndex(w http.ResponseWriter, r *http.Request) {
 	// Set content type
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// Render the index template
-	err = templates.Index(munros).Render(r.Context(), w)
+	// Render the landing page template
+	err := templates.Landing().Render(r.Context(), w)
+	if err != nil {
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		return
+	}
+}
+
+func HandleMap(w http.ResponseWriter, r *http.Request) {
+	// Set content type
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Render the map page template
+	err := templates.MapPage().Render(r.Context(), w)
 	if err != nil {
 		log.Printf("Error rendering template: %v", err)
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)

@@ -16,4 +16,6 @@ func SetupMunroRoutes(router *http.ServeMux) {
 
 func SetupFrontendRoutes(router *http.ServeMux) {
 	router.HandleFunc("/", routes.HandleIndex)
+	router.HandleFunc("/map", routes.HandleMap)
+
 }

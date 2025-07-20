@@ -1,0 +1,243 @@
+package views
+
+templ MapPage() {
+	@Layout("Munro Map - Interactive Scottish Munros", "Explore all the Munros in Scotland with our interactive map") {
+		@Header(0)
+		@Search()
+		<!-- Map Container -->
+		<main class="h-[calc(100vh-80px)] relative">
+			<div id="map" class="w-full h-full"></div>
+			<!-- Loading Overlay -->
+			<div
+				id="loading-overlay"
+				class="w-full h-full flex items-center justify-center bg-gray-100 absolute top-0 left-0"
+			>
+				<div class="text-center">
+					<div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
+					<p class="text-gray-600">Loading map...</p>
+				</div>
+			</div>
+		</main>
+		<script>
+			// Global variables
+			let map;
+			let munros = [];
+			let filteredMunros = [];
+			let markers = [];
+			let selectedMunro = null;
+
+			// Initialize the application
+			document.addEventListener("DOMContentLoaded", function () {
+				initializeMap();
+				loadMunros();
+			});
+
+			// Initialize the Leaflet map
+			function initializeMap() {
+				// Scotland bounds
+				const scotlandBounds = L.latLngBounds(
+					[54.6, -7.5], // Southwest corner
+					[60.9, -0.5], // Northeast corner
+				);
+
+				map = L.map("map", {
+					center: [56.8, -4.2], // Center of Scotland
+					zoom: 7,
+					minZoom: 6,
+					maxZoom: 14,
+					maxBounds: scotlandBounds,
+					maxBoundsViscosity: 1.0,
+					worldCopyJump: false,
+					zoomSnap: 0.25,
+					wheelPxPerZoomLevel: 10,
+				});
+
+				// Add tile layer
+				L.tileLayer(
+					"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+					{
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+					},
+				).addTo(map);
+			}
+
+			// Load munros from API
+			async function loadMunros() {
+				try {
+					const response = await fetch("/api/munros");
+					if (!response.ok) {
+						throw new Error("Failed to fetch munros");
+					}
+
+					munros = await response.json();
+					filteredMunros = [...munros];
+
+					updateMunroCount();
+					addMarkersToMap();
+					hideLoadingOverlay();
+				} catch (error) {
+					console.error("Error loading munros:", error);
+					const munroCountEl = document.getElementById("munro-count");
+					const filterCountEl = document.getElementById("munro-filter-count");
+					if (munroCountEl) munroCountEl.textContent = "Error loading munros";
+					if (filterCountEl) filterCountEl.textContent = "Error loading munros";
+					hideLoadingOverlay();
+				}
+			}
+
+			// Create custom Munro icon
+			function createMunroIcon() {
+				const svgIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="#2563eb" d="M12 2L3 22h18L12 2zm0 4.5L18.5 20h-13L12 6.5z"/><circle cx="12" cy="8" r="1.5" fill="#ffffff"/></svg>';
+
+				return L.icon({
+					iconUrl: "data:image/svg+xml;base64," + btoa(svgIcon),
+					iconSize: [24, 24],
+					iconAnchor: [12, 24],
+					popupAnchor: [0, -24],
+				});
+			}
+
+			// Add markers to map
+			function addMarkersToMap() {
+				// Clear existing markers
+				markers.forEach((marker) => map.removeLayer(marker));
+				markers = [];
+
+				const munroIcon = createMunroIcon();
+
+				filteredMunros.forEach((munro) => {
+					const marker = L.marker([munro.latitude, munro.longitude], {
+						icon: munroIcon,
+					}).addTo(map);
+
+					marker.bindPopup(createPopupContent(munro));
+					marker.on("click", () => handleMunroClick(munro));
+
+					markers.push(marker);
+				});
+
+				// Fit map to show all markers
+				if (filteredMunros.length > 0) {
+					const bounds = L.latLngBounds(
+						filteredMunros.map((munro) => [
+							munro.latitude,
+							munro.longitude,
+						]),
+					);
+					map.fitBounds(bounds, { padding: [20, 20] });
+				}
+			}
+
+			// Create popup content
+			function createPopupContent(munro) {
+				const formatHeight = (heightM, heightFt) => {
+					return heightM.toFixed(1) + "m (" + heightFt.toLocaleString() + "ft)";
+				};
+
+				let html = '<div class="min-w-[280px] max-w-[400px]">';
+				html += '<h3 class="text-lg font-bold text-gray-800 mb-2">' + munro.name + '</h3>';
+				html += '<div class="space-y-2 text-sm">';
+
+				html += '<div class="flex justify-between">';
+				html += '<span class="font-semibold text-gray-600">Height:</span>';
+				html += '<span class="text-gray-800">' + formatHeight(munro.height_m, munro.height_ft) + '</span>';
+				html += '</div>';
+
+				html += '<div class="flex justify-between">';
+				html += '<span class="font-semibold text-gray-600">Classification:</span>';
+				const classificationClass = munro.classification === "Munro" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800";
+				html += '<span class="px-2 py-1 rounded text-xs font-medium ' + classificationClass + '">' + munro.classification + '</span>';
+				html += '</div>';
+
+				html += '<div class="flex justify-between">';
+				html += '<span class="font-semibold text-gray-600">SMC Section:</span>';
+				html += '<span class="text-gray-800">' + munro.smc_section + '</span>';
+				html += '</div>';
+
+				html += '<div class="flex justify-between">';
+				html += '<span class="font-semibold text-gray-600">Grid Reference:</span>';
+				html += '<span class="text-gray-800 font-mono">' + munro.grid_ref + '</span>';
+				html += '</div>';
+
+				if (munro.comments) {
+					html += '<div class="border-t pt-2">';
+					html += '<span class="font-semibold text-gray-600">Comments:</span>';
+					html += '<p class="text-gray-700 text-xs mt-1">' + munro.comments + '</p>';
+					html += '</div>';
+				}
+
+				html += '</div>';
+				html += '<div class="flex gap-2 mt-3 pt-3 border-t">';
+
+				if (munro.streetmap_url) {
+					html += '<a href="' + munro.streetmap_url + '" target="_blank" rel="noopener noreferrer" class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Street Map</a>';
+				}
+
+				if (munro.geograph_url) {
+					html += '<a href="' + munro.geograph_url + '" target="_blank" rel="noopener noreferrer" class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Photos</a>';
+				}
+
+				if (munro.hill_bagging_url) {
+					html += '<a href="' + munro.hill_bagging_url + '" target="_blank" rel="noopener noreferrer" class="text-xs bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600">Hill Bagging</a>';
+				}
+
+				html += '</div>';
+				html += '</div>';
+
+				return html;
+			}
+
+			// Handle munro click
+			function handleMunroClick(munro) {
+				selectedMunro = munro;
+				// Additional click handling can be added here
+			}
+
+			// Filter munros based on search
+			function filterMunros() {
+				const searchInput = document.getElementById("search-input");
+				if (!searchInput) return;
+
+				const searchTerm = searchInput.value.toLowerCase().trim();
+
+				if (searchTerm === "") {
+					filteredMunros = [...munros];
+				} else {
+					filteredMunros = munros.filter(
+						(munro) =>
+							munro.name.toLowerCase().includes(searchTerm) ||
+							munro.smc_section.toLowerCase().includes(searchTerm),
+					);
+				}
+
+				updateFilterCount();
+				addMarkersToMap();
+			}
+
+			// Update munro count
+			function updateMunroCount() {
+				const munroCountEl = document.getElementById("munro-count");
+				if (munroCountEl) {
+					munroCountEl.textContent = munros.length + " Munros Available";
+				}
+			}
+
+			// Update filter count
+			function updateFilterCount() {
+				const filterCountEl = document.getElementById("munro-filter-count");
+				if (filterCountEl) {
+					filterCountEl.textContent = "Showing " + filteredMunros.length + " of " + munros.length + " munros";
+				}
+			}
+
+			// Hide loading overlay
+			function hideLoadingOverlay() {
+				const loadingEl = document.getElementById("loading-overlay");
+				if (loadingEl) {
+					loadingEl.style.display = "none";
+				}
+			}
+		</script>
+	}
+}
